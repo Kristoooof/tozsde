@@ -11,7 +11,8 @@
 // ---------- Alap beállítások (ezeket nem változtatjuk menet közben) ----------
 
 var KEZDO_AR = 2000;          // a részvény mindig 2000 Ft-ról indul
-var ARVALTOZAS_SZORZO = 1;    // 1 Ft árváltozás minden 1 db nettó vételi/eladási különbségre
+var ARVALTOZAS_SZORZO = 3;    // 3 Ft árváltozás minden 1 db nettó vételi/eladási különbségre
+var GRAFIKON_NAGYITAS = 10;  // a grafikonon az árváltozás 10x látszik nagyobbnak
 var REGISZTRALASI_KUSZOB = 5; // 5 Ft alatti napi változást a botok nem veszik "igazi" változásnak
 var NAGY_UGRAS = 30;          // az 1. botnak ez számít nagy ugrásnak
 var CEL_OSSZEG = 200000;      // ha penz + reszvenyek erteke eleri ezt, nyertel
@@ -58,6 +59,15 @@ function maximumKikereses(tomb) {
         max = 1; // hogy ne legyen osztás 0-val a magasság számolásnál
     }
     return max;
+}
+
+// kiszámolja egy tömb átlagát (ehhez képest mutatjuk a változást a grafikonon)
+function atlagKiszamitas(tomb) {
+    var osszeg = 0;
+    for (var i = 0; i < tomb.length; i++) {
+        osszeg = osszeg + tomb[i];
+    }
+    return osszeg / tomb.length;
 }
 
 // ellenőrzi, hogy a beírt szöveg egy érvényes pozitív egész szám-e
@@ -250,10 +260,15 @@ function ujArfolyamSzamitas(regiAr, nettoMennyiseg) {
 // Kijelzés / grafikon frissítése
 // ===================================================================
 
-function oszlopBeallitasa(div, ar, elozoAr, maxAr) {
-    var szazalek = (ar / maxAr) * 100;
+function oszlopBeallitasa(div, ar, elozoAr, maxAr, atlagAr) {
+    // az oszlop a 50%-os magassagbol indul, es az atlagtol valo elteres
+    // 10x nagyitva latszik (igy egy pici valtozas is jol kivehetö)
+    var szazalek = 50 + ((ar - atlagAr) / maxAr) * 100 * GRAFIKON_NAGYITAS;
     if (szazalek < 5) {
-        szazalek = 5; // hogy mindig latszodjon egy kicsi oszlop akkor is, ha nagyon alacsony az ar
+        szazalek = 5;   // hogy mindig latszodjon egy kicsi oszlop
+    }
+    if (szazalek > 100) {
+        szazalek = 100; // ne lognon ki a dobozbol
     }
     div.style.height = szazalek + "%";
 
@@ -280,12 +295,13 @@ function grafikonFrissites() {
 
     var lathatoArak = arfolyamTortenet.slice(kezdoIndex);
     var maxAr = maximumKikereses(lathatoArak);
+    var atlagAr = atlagKiszamitas(lathatoArak);
 
     for (var i = 0; i < napNevek.length; i++) {
         var index = kezdoIndex + i;
         var elem = document.getElementById(napNevek[i]);
         if (elem && arfolyamTortenet[index] !== undefined) {
-            oszlopBeallitasa(elem, arfolyamTortenet[index], arfolyamTortenet[index - 1], maxAr);
+            oszlopBeallitasa(elem, arfolyamTortenet[index], arfolyamTortenet[index - 1], maxAr, atlagAr);
         }
     }
 
@@ -293,7 +309,7 @@ function grafikonFrissites() {
     var osszesOszlop = document.querySelectorAll(".arfolyam > div");
     var maiOszlop = osszesOszlop[osszesOszlop.length - 1];
     if (maiOszlop) {
-        oszlopBeallitasa(maiOszlop, aktualisAr, arfolyamTortenet[n - 2], maxAr);
+        oszlopBeallitasa(maiOszlop, aktualisAr, arfolyamTortenet[n - 2], maxAr, atlagAr);
     }
 }
 
