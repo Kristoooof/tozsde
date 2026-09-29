@@ -1,29 +1,3 @@
-
-body, html{
-            height: 100%;
-            margin: 0;
-        }
-        header{
-            height: 5%;
-            padding: 0 20px;
-        }
-        .fejlec > div {
-            height: 100%;
-            display: flex;
-            align-items: center;
-        }
-        .fejlec{
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between; /* kitolja őket a két szélére */
-        }
-        img{
-            max-height: 80%; /* hogy ne érjen teljesen a fejléc széléhez */
-            width: auto;
-            object-fit: contain;
-        }
-
 /* ============================================
    Tőzsde bemutató — sötét zöld téma
    Csak ezt a fájlt módosítom, a HTML-hez nem
@@ -65,7 +39,7 @@ body, html{
 
     /* a fix fejléc becsült magassága, ehhez igazítjuk a tartalom
        eltolását és a horgony-linkek ugrási pontját */
-    --fejlec-magassag: 78px;
+    --fejlec-magassag: 68px;
 }
 
 * {
@@ -114,7 +88,10 @@ section {
 header {
     background: linear-gradient(90deg, #04100a, #0c2417);
     color: var(--text);
-    padding: 14px 24px;
+    height: var(--fejlec-magassag);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
     box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
     position: fixed;
     top: 0;
@@ -124,10 +101,10 @@ header {
 }
 
 .fejlec {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
     gap: 16px;
 }
 
@@ -145,7 +122,6 @@ header {
 
 .fejlec nav {
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
     gap: 28px;
 }
@@ -456,20 +432,24 @@ footer p {
 
 @media (max-width: 700px) {
     :root {
-        --fejlec-magassag: 150px;
+        --fejlec-magassag: 88px;
     }
 
     header {
-        padding: 12px 16px;
+        padding: 0 16px;
     }
 
     .fejlec {
         flex-direction: column;
-        gap: 10px;
+        gap: 6px;
+    }
+
+    .fejlec img {
+        height: 32px;
     }
 
     .fejlec nav {
-        gap: 16px;
+        gap: 14px;
     }
 
     .banner {
@@ -499,13 +479,12 @@ footer p {
 }
 
 @media (max-width: 420px) {
-    :root {
-        --fejlec-magassag: 168px;
-    }
-
     .fejlec nav {
         gap: 12px;
-        font-size: 0.9rem;
+    }
+
+    .fejlec nav a {
+        font-size: 0.85rem;
     }
 
     .arfolyam {
@@ -527,4 +506,4 @@ footer p {
     .info input[type="number"] {
         width: 100%;
     }
-}
+                }
