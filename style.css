@@ -1,0 +1,768 @@
+/* ---------- VÁLTOZÓK (színek, méretek) ----------
+   A :root az egész oldal "gyökere". Ide írt --nevű változókat bárhol
+   használhatjuk a var(--nev) írásmóddal. Ha egy színt át akarsz írni,
+   elég itt egyszer megtenned, és az egész oldalon megváltozik. */
+
+:root {
+    /* alap sötét felületek */
+    --bg:            #070f0b;   /* fő, majdnem fekete zöldes háttér */
+    --bg-elevated:   #0f1e16;   /* kártyák, panelek háttere (kicsit világosabb a főháttérnél) */
+    --border-soft:   rgba(255, 255, 255, 0.08);   /* halvány, áttetsző keret (rgba: az utolsó szám az átlátszóság) */
+
+    /* zöld skála (fényesebb árnyalatok, hogy sötét alapon is jól látszódjanak) */
+    --green-deep:    #0d3d26;   /* sötétzöld */
+    --green:         #2ecc79;   /* alap zöld */
+    --green-bright:  #7ef0b3;   /* világos zöld, kiemelésekhez */
+
+    /* a zöld ellentéte a színkörön: pink/magenta-vörös */
+    --accent-deep:   #2e0f22;   /* a második szekció sötét háttere */
+    --accent:        #d6317f;   /* alap pink */
+    --accent-bright: #f07ec0;   /* világos pink */
+
+    /* hibaüzenet színe */
+    --hiba:          #ff8fa3;
+    /* hibaüzenet a pink szekcióban (a rózsaszín hiba ott nem válna el a háttértől) */
+    --figyelmeztetes: #ffd27a;
+
+    /* a pink szekció beviteli mezőinek sötét háttere */
+    --accent-darker: #1d0914;
+
+    /* szövegszínek */
+    --text:          #eef7f1;   /* fő szöveg (törtfehér) */
+    --text-muted:    #a9c7b6;   /* halványabb szöveg (bekezdések) */
+
+    /* a fix fejléc magassága; ehhez igazítjuk a tartalom eltolását
+       és a menülinkek ugrási pontját is */
+    --fejlec-magassag: 68px;
+}
+
+
+/* ---------- ALAPBEÁLLÍTÁSOK ---------- */
+
+/* Minden elemnél a szélesség/magasság a belső margót és a keretet is
+   magában foglalja. Így könnyebb a méretekkel számolni. */
+* {
+    box-sizing: border-box;
+}
+
+/* Menülinkre kattintva nem ugrik, hanem szépen legörget a szekcióhoz. */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    position: relative;     /* a ::before háttérfény ehhez igazodik */
+    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;   /* betűtípusok sorrendben: ami az első, ami a gépen van, azt használja */
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;       /* sormagasság, hogy olvashatóbb legyen a szöveg */
+    overflow-x: hidden;     /* ne jelenjen meg vízszintes görgetősáv */
+    /* hely a fix fejléc alatt, hogy a tartalom ne csússzon alá */
+    padding-top: var(--fejlec-magassag);
+}
+
+/* Nagyon halvány színes háttérfény két sarokban, hogy a sima sötét
+   háttér ne legyen laposnak. A ::before egy "kitalált" elem a body elején. */
+body::before {
+    content: "";            /* kötelező, különben nem jelenik meg */
+    position: fixed;        /* mindig a képernyőhöz van rögzítve */
+    inset: 0;               /* mind a 4 oldalon 0: az egész képernyőt kitölti */
+    background:
+        radial-gradient(circle at 12% 18%, rgba(46, 204, 121, 0.12), transparent 42%),   /* zöld fény bal felül */
+        radial-gradient(circle at 88% 78%, rgba(214, 49, 127, 0.09), transparent 46%);   /* pink fény jobb alul */
+    pointer-events: none;   /* az egérkattintások átmennek rajta */
+    z-index: -1;            /* minden más mögött van */
+}
+
+/* Menülinkre kattintva a szekció teteje ennyivel a képernyő teteje alatt áll meg,
+   így nem bújik a fix fejléc mögé. */
+.banner,
+section {
+    scroll-margin-top: var(--fejlec-magassag);
+}
+
+
+/* ---------- FEJLÉC / NAVIGÁCIÓ ---------- */
+
+/* A fejléc mindig a képernyő tetején marad (position: fixed),
+   görgetéskor sem tűnik el. */
+header {
+    background: linear-gradient(90deg, #04100a, #0c2417);   /* balról jobbra színátmenet */
+    color: var(--text);
+    height: var(--fejlec-magassag);
+    display: flex;              /* flex: a belső elemeket egymás mellé rakja */
+    align-items: center;        /* függőlegesen középre */
+    padding: 0 24px;            /* fent-lent 0, jobbra-balra 24px belső tér */
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);   /* árnyék alatta */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;              /* nagy szám = minden más fölött jelenik meg */
+}
+
+/* A fejléc belseje: logó balra, menü jobbra. */
+.fejlec {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;   /* az első elem balra, az utolsó jobbra kerül */
+    gap: 16px;                        /* az elemek közötti minimális távolság */
+}
+
+/* A logó (érme ikon). */
+.fejlec img {
+    height: 40px;
+    width: auto;                /* a szélesség az arányokat megtartva követi a magasságot */
+    object-fit: contain;        /* a kép nem torzul, teljes egészében látszik */
+    filter: drop-shadow(0 0 5px rgba(126, 240, 179, 0.55));   /* zöld fénylés a logó körül */
+    transition: transform 0.2s ease;    /* az átalakulás (hover) simán megy végbe */
+}
+
+/* Ha az egeret a logó fölé viszed: kicsit megnő és elfordul. */
+.fejlec img:hover {
+    transform: scale(1.08) rotate(-4deg);
+}
+
+/* A menü (a 3 link egymás mellett). */
+.fejlec nav {
+    display: flex;
+    justify-content: center;
+    gap: 28px;                  /* linkek közötti távolság */
+}
+
+/* A menülinkek kinézete. */
+.fejlec nav a {
+    color: var(--text);
+    text-decoration: none;      /* ne legyen aláhúzás */
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;     /* kicsit szellősebb betűközök */
+    position: relative;         /* az ::after csík ehhez igazodik */
+    padding: 6px 2px;
+    opacity: 0.9;
+    transition: opacity 0.2s ease, color 0.2s ease;
+    white-space: nowrap;        /* a link szövege ne törjön új sorba */
+}
+
+/* A link alatti csík: alapból nulla széles (nem látszik). */
+.fejlec nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0%;
+    height: 2px;
+    background: var(--green-bright);
+    transition: width 0.25s ease;   /* a szélesség változása animálva történik */
+}
+
+/* Hover: a link világosabb zöld és teljesen látszik. */
+.fejlec nav a:hover {
+    opacity: 1;
+    color: var(--green-bright);
+}
+
+/* Hover: a csík kinő a link teljes szélességére. */
+.fejlec nav a:hover::after {
+    width: 100%;
+}
+
+
+/* ---------- BANNER (a nagy cím az oldal tetején) ---------- */
+
+.banner {
+    background: linear-gradient(135deg, #051510 0%, var(--green-deep) 55%, #145c3a 100%);   /* átlós zöld színátmenet */
+    color: var(--text);
+    text-align: center;         /* a szöveg középre */
+    padding: 72px 20px;         /* fent-lent 72px, jobbra-balra 20px belső tér */
+}
+
+.banner h1 {
+    margin: 0;
+    font-size: clamp(1.6rem, 5vw, 2.8rem);   /* clamp(min, ideális, max): a betűméret a képernyővel együtt nő, de a két határ között marad */
+    font-weight: 800;           /* vastag betű */
+    letter-spacing: 0.01em;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);   /* árnyék a szöveg mögött */
+}
+
+
+/* ---------- SZEKCIÓK (Mi a tőzsde? / Befektetés / Szimuláció) ---------- */
+
+section {
+    padding: clamp(36px, 8vw, 64px) clamp(20px, 10%, 10%);   /* fent-lent és oldalt is rugalmas belső tér */
+    text-align: center;
+}
+
+/* 1. és 3. szekció (páratlan): alap sötét háttér. */
+section:nth-of-type(odd) {
+    background: var(--bg);
+}
+
+/* 2. szekció (páros): a zöld ellentéte a színkörön, a pink család. */
+section:nth-of-type(even) {
+    background: var(--accent-deep);
+}
+
+/* Szekciócímek (h2). */
+h2 {
+    color: var(--green-bright);
+    font-size: clamp(1.35rem, 3.5vw, 1.8rem);
+    font-weight: 800;
+    margin: 0 0 8px;
+    text-align: center;
+}
+
+/* A cím alatti kis díszcsík. */
+h2::after {
+    content: "";
+    display: block;             /* külön sorba kerül a cím alá */
+    width: 56px;
+    height: 4px;
+    margin: 10px auto 0;        /* az "auto" a csíkot vízszintesen középre teszi */
+    border-radius: 4px;         /* lekerekített végek */
+    background: linear-gradient(90deg, var(--green), var(--green-bright));
+}
+
+/* A páros (2.) szekcióban a cím és a csík is pink. */
+section:nth-of-type(even) h2 {
+    color: var(--accent-bright);
+}
+
+section:nth-of-type(even) h2::after {
+    background: linear-gradient(90deg, var(--accent), var(--accent-bright));
+}
+
+/* Bekezdések: középre rendezett, nem túl széles szöveg. */
+p {
+    max-width: 800px;           /* hosszú sorokat nehéz olvasni, ezért korlátozzuk */
+    margin: 0 auto;             /* a bekezdés doboza középre kerül */
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    line-height: 1.75;
+    text-align: center;
+}
+
+
+/* ---------- ÁRFOLYAM GRAFIKON ---------- */
+
+/* A grafikon doboza. Grid-et használ (rács): az #arfolyam felirat a teljes
+   első sort elfoglalja, a 11 oszlop pedig a második sorba kerül, egyenletesen elosztva. */
+.arfolyam {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);   /* 11 egyenlő széles oszlop */
+    grid-template-rows: auto 1fr;             /* 1. sor: a felirat magassága; 2. sor: az összes többi hely */
+    align-items: end;           /* az oszlopok alulról indulnak felfelé */
+    gap: 8px;                   /* oszlopok közötti hely */
+    height: 240px;
+    margin: 24px auto 0;
+    max-width: 720px;
+    padding: 18px 28px;         /* belső tér, így az első és utolsó oszlop nem ér a doboz széléhez */
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+/* A "Részvény árfolyama: ... Ft" felirat a grafikon tetején. */
+#arfolyam {
+    grid-column: 1 / -1;        /* az 1. vonaltól az utolsóig: végigér a teljes soron */
+    display: block;
+    margin-bottom: 14px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+/* Maga az árfolyam-szám kiemelve. */
+#arfolyam #ertek {
+    color: var(--green-bright);
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+/* Az oszlopok (a magasságot a JS állítja be, ez csak az alapértelmezés). */
+.arfolyam > div {
+    min-height: 4%;             /* ennél alacsonyabb nem lehet */
+    height: 40%;
+    background: linear-gradient(to top, var(--green-deep), var(--green));
+    border-radius: 5px 5px 2px 2px;   /* felül nagyobb, alul kisebb lekerekítés */
+    transition: height 0.35s ease, background 0.35s ease, filter 0.2s ease;   /* a változások animálva mennek végbe */
+}
+
+/* Ha az egeret az oszlop fölé viszed: világosabb lesz. */
+.arfolyam > div:hover {
+    filter: brightness(1.2);
+}
+
+/* A JS ezt a két osztályt adja az oszlopokra az előző naphoz képest:
+   .zold = emelkedett az ár, .piros = esett az ár. */
+.arfolyam > div.zold {
+    background: linear-gradient(to top, var(--green-deep), var(--green-bright));
+}
+
+.arfolyam > div.piros {
+    background: linear-gradient(to top, #5c1230, var(--accent));
+}
+
+
+/* ---------- INFO PANEL (pénz, részvények, gombok) ---------- */
+
+/* A panel doboza. */
+.info {
+    max-width: 460px;
+    width: 100%;
+    margin: 32px auto 0;
+    text-align: center;
+    background: var(--bg-elevated);
+    border: 2px solid var(--green);
+    border-radius: 16px;
+    padding: 28px 32px;
+    font-size: 1.1rem;
+    color: var(--text);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* A számok (pénz, részvény, érték) kiemelve. */
+.info #penz,
+.info #reszveny,
+.info #reszvenyErtek {
+    font-weight: 800;
+    color: var(--green-bright);
+}
+
+/* A sortörések (<br>) után egy kis plusz hely, hogy a sorok ne tapadjanak egymáshoz. */
+.info br {
+    display: block;
+    margin-top: 10px;
+}
+
+/* A két szám beviteli mező (vásárlás / eladás mennyisége). */
+.info input[type="number"] {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    width: 130px;
+    margin-left: 8px;
+    outline: none;              /* a böngésző alap kék kerete helyett saját focus-stílust használunk */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Amikor a mezőbe kattintasz (focus): zöld keret és halvány fénylés. */
+.info input[type="number"]:focus {
+    border-color: var(--green-bright);
+    box-shadow: 0 0 0 3px rgba(126, 240, 179, 0.18);
+}
+
+/* A mező halvány "Mennyiség" szövege (placeholder). */
+.info input[type="number"]::placeholder {
+    color: var(--text-muted);
+}
+
+/* A 3 gomb közös alapstílusa. A színt lent gombonként külön adjuk meg. */
+.info button {
+    margin-top: 14px;
+    margin-right: 4px;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 22px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;            /* kéz alakú egérkurzor */
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+/* Vásárlás gomb: zöld. */
+#vasarlas {
+    background: var(--green);
+    color: #04140c;
+    box-shadow: 0 4px 14px rgba(46, 204, 121, 0.35);
+}
+
+/* Hover: világosabb zöld, és picit felemelkedik (translateY negatív = felfelé). */
+#vasarlas:hover {
+    background: var(--green-bright);
+    transform: translateY(-2px);
+}
+
+/* Eladás gomb: pink, hogy jól elváljon a vásárlástól. */
+#eladas {
+    background: var(--accent);
+    color: #240213;
+    box-shadow: 0 4px 14px rgba(214, 49, 127, 0.35);
+}
+
+#eladas:hover {
+    background: var(--accent-bright);
+    transform: translateY(-2px);
+}
+
+/* Következő nap gomb: kiemelt, a panel teljes szélességét kitölti, saját sorban van. */
+#kovetkezoNap {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    background: transparent;            /* áttetsző háttér, csak keret */
+    color: var(--text);
+    border: 2px solid var(--green-bright);
+    box-shadow: none;
+}
+
+/* Hover: kitöltődik zölddel. */
+#kovetkezoNap:hover {
+    background: var(--green-bright);
+    color: #04140c;
+    transform: translateY(-2px);
+}
+
+/* Lenyomás közben (active) a gomb visszasüllyed az eredeti helyére. */
+.info button:active {
+    transform: translateY(0);
+}
+
+/* A hibaüzenet helye. Külön sorba kerül, és mindig foglal egy sornyi helyet
+   (min-height), így az oldal nem ugrál, amikor megjelenik a szöveg. */
+#hiba {
+    display: block;
+    min-height: 1.2em;
+    margin-top: 14px;
+    color: var(--hiba);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+
+/* ---------- LÁBLÉC ---------- */
+
+footer {
+    text-align: center;
+    padding: 28px 20px;
+    background: #04100a;
+    border-top: 1px solid var(--border-soft);   /* vékony elválasztó vonal a tetején */
+}
+
+footer p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+
+/* ---------- KAMATOS KAMAT KALKULÁTOR és VALUTA VÁLTÓ ----------
+   Ezekben a szekciókban a sorok egyszerű <span>-ok, <br>-ekkel elválasztva.
+   A háttérszínt a szekciók általános szabálya adja: a kamatos kamat a 4. szekció
+   (páros), ezért a pink család; a valuta váltó az 5. (páratlan), ezért a zöld. */
+
+/* A szekciók leírása (p) alatt egy kis plusz hely a beviteli sorok előtt. */
+#kamatos_kamat p,
+#valuta_valto p {
+    margin: 0 auto 18px;
+}
+
+/* Az űrlapsorok (a szekciók közvetlen gyerek span-jai). Az inline-block miatt
+   a margó helyet ad a sorok között; a sortörést a HTML-ben lévő <br> adja. */
+#kamatos_kamat > span,
+#valuta_valto > span {
+    display: inline-block;
+    margin: 10px 6px;
+    font-size: 1.05rem;
+    color: var(--text);
+}
+
+/* Számmezők (mindkét szekcióban). */
+#kamatos_kamat input[type="number"],
+#valuta_valto input[type="number"] {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    width: 130px;
+    margin: 0 6px;              /* hely a mező és a mellette álló szöveg (pl. "Ft", "%") között */
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Legördülő menük (év/hónap, valuták). */
+#kamatos_kamat select,
+#valuta_valto select {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    margin: 6px;
+    max-width: 100%;            /* kis képernyőn se lógjon ki */
+    cursor: pointer;
+    outline: none;
+    color-scheme: dark;         /* a böngésző a lenyíló listát és a nyilat is sötét színekkel rajzolja */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* A lenyíló lista elemei. */
+#kamatos_kamat option,
+#valuta_valto option {
+    background: var(--bg-elevated);
+    color: var(--text);
+}
+
+/* A mezőkben a halvány minta-szöveg (placeholder). */
+#kamatos_kamat input[type="number"]::placeholder,
+#valuta_valto input[type="number"]::placeholder {
+    color: var(--text-muted);
+}
+
+/* A valuta váltó legördülő menüi legyenek elég szélesek a hosszú nevekhez
+   (pl. "Ausztrál dollár"). */
+#valuta_valto select {
+    min-width: 160px;
+}
+
+/* --- Kamatos kamat: pink család (a szekció háttere is pink) --- */
+
+#kamatos_kamat input[type="number"],
+#kamatos_kamat select {
+    background: var(--accent-darker);
+}
+
+/* Fókusz (amikor a mezőbe kattintasz): pink keret és fénylés. */
+#kamatos_kamat input[type="number"]:focus,
+#kamatos_kamat select:focus {
+    border-color: var(--accent-bright);
+    box-shadow: 0 0 0 3px rgba(240, 126, 192, 0.2);
+}
+
+/* "Számol" gomb: pink, mint az Eladás gomb. */
+#szamol {
+    margin: 12px 6px;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 26px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    background: var(--accent);
+    color: #240213;
+    box-shadow: 0 4px 14px rgba(214, 49, 127, 0.35);
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+#szamol:hover {
+    background: var(--accent-bright);
+    transform: translateY(-2px);
+}
+
+/* A végösszeg száma: nagy és kiemelt. A #kamatos_kamat előtag azért kell,
+   hogy erősebb legyen, mint a fenti, minden span-ra vonatkozó szabály. */
+#kamatos_kamat #vegOsszeg {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--accent-bright);
+    margin: 0 4px 0 6px;        /* hely a "Végösszeg:" szöveg és az "Ft" között */
+}
+
+/* Hibaüzenet. Mindig foglal egy sornyi helyet (min-height), hogy az oldal
+   ne ugráljon, amikor megjelenik. Borostyánsárga, mert a pink háttéren
+   a rózsaszín hiba nem válna el a többi szövegtől. */
+#kamatos_kamat #hibas {
+    min-height: 1.2em;
+    max-width: 100%;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--figyelmeztetes);
+}
+
+/* --- Valuta váltó: zöld család --- */
+
+#valuta_valto input[type="number"]:focus,
+#valuta_valto select:focus {
+    border-color: var(--green-bright);
+    box-shadow: 0 0 0 3px rgba(126, 240, 179, 0.18);
+}
+
+/* "Váltás" gomb: zöld, mint a Vásárlás gomb. */
+#valuta_valtas {
+    margin: 12px 6px;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 26px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    background: var(--green);
+    color: #04140c;
+    box-shadow: 0 4px 14px rgba(46, 204, 121, 0.35);
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+#valuta_valtas:hover {
+    background: var(--green-bright);
+    transform: translateY(-2px);
+}
+
+/* Amíg a JS az árfolyamot tölti, letiltja a gombot: halványabb, várakozó kurzor. */
+#valuta_valtas:disabled {
+    opacity: 0.55;
+    cursor: wait;
+    transform: none;
+}
+
+/* Lenyomás közben mindkét gomb visszasüllyed. */
+#szamol:active,
+#valuta_valtas:active {
+    transform: translateY(0);
+}
+
+/* Az átváltás eredménye. */
+#valuta_valto #valuta_eredmeny {
+    min-height: 1.4em;
+    max-width: 100%;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--green-bright);
+}
+
+/* Az árfolyam dátuma az eredmény alatt, kisebb betűvel. A JS a data-datum
+   attribútumba írja a szöveget, a CSS az attr() függvénnyel jeleníti meg.
+   Csak akkor látszik, ha az attribútum létezik. */
+#valuta_valto #valuta_eredmeny[data-datum]::after {
+    content: attr(data-datum);
+    display: block;
+    margin-top: 4px;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--text-muted);
+}
+
+/* Hibaüzenet a valuta váltónál (a HTML-ben az id="valuta_hiba" kell hozzá). */
+#valuta_valto #valuta_hiba {
+    min-height: 1.2em;
+    max-width: 100%;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--hiba);
+}
+
+
+/* ---------- RESZPONZIVITÁS (kisebb képernyők) ----------
+   A @media blokkokban lévő szabályok csak akkor érvényesek, ha az ablak
+   szélessége a megadott érték alatt van. A korábbi szabályokat felülírják. */
+
+/* Tablet és kisebb (960px alatt): kisebb oldalsó tér a szekcióknál. */
+@media (max-width: 960px) {
+    section {
+        padding-left: 6%;
+        padding-right: 6%;
+    }
+}
+
+/* Telefon (700px alatt). */
+@media (max-width: 700px) {
+    /* A fejléc magasabb, mert a logó és a menü egymás alá kerül. */
+    :root {
+        --fejlec-magassag: 88px;
+    }
+
+    header {
+        padding: 0 16px;
+    }
+
+    .fejlec {
+        flex-direction: column;     /* egymás alá: logó fent, menü alatta */
+        gap: 6px;
+    }
+
+    .fejlec img {
+        height: 32px;               /* kisebb logó */
+    }
+
+    .fejlec nav {
+        gap: 14px;
+    }
+
+    .banner {
+        padding: 48px 16px;
+    }
+
+    /* Alacsonyabb, sűrűbb grafikon. */
+    .arfolyam {
+        height: 190px;
+        gap: 5px;
+        padding: 14px 16px;
+    }
+
+    #arfolyam {
+        font-size: 0.95rem;
+    }
+
+    .info {
+        padding: 22px 18px;
+    }
+
+    .info input[type="number"] {
+        width: 110px;
+        margin-top: 8px;
+        margin-left: 0;
+        display: inline-block;
+    }
+
+    /* Kamatos kamat és valuta váltó: keskenyebb számmezők, kisebb eredmény. */
+    #kamatos_kamat input[type="number"],
+    #valuta_valto input[type="number"] {
+        width: 110px;
+    }
+
+    #valuta_valto #valuta_eredmeny {
+        font-size: 1.1rem;
+    }
+}
+
+/* Nagyon kicsi telefon (420px alatt). */
+@media (max-width: 420px) {
+    .fejlec nav {
+        gap: 12px;
+    }
+
+    .fejlec nav a {
+        font-size: 0.85rem;
+    }
+
+    .arfolyam {
+        height: 160px;
+        gap: 3px;
+        padding: 12px 10px;
+    }
+
+    .info {
+        max-width: 100%;
+        padding: 18px 14px;
+    }
+
+    /* A gombok és mezők a panel teljes szélességét kitöltik. */
+    .info button {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    .info input[type="number"] {
+        width: 100%;
+    }
+
+    #kamatos_kamat #vegOsszeg {
+        font-size: 1.35rem;
+    }
+
+    /* A valuta menük ne legyenek szélesebbek a képernyőnél. */
+    #valuta_valto select {
+        min-width: 0;
+        width: 100%;
+    }
+}
