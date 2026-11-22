@@ -5,8 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="coin.png" type="image/x-icon">
+    <!-- Betűtípusok a Google Fontsról: IBM Plex Sans (szöveg) és IBM Plex Mono (címek, számok) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="script_sajat.js"></script>
+    <script src="script.js"></script>
     <!-- <style>
         body, html{
             height: 100%;
@@ -46,12 +50,34 @@
                 <a href="#miatozsde">Mi a tőzsde?</a>
                 <a href="#befektetes">Befektetés</a>
                 <a href="#szimulacio">Szimuláció</a>
-                <a href="#kamatos_kamat">Kamatos kamat</a>
-                <a href="#valuta_valto">Valuta váltó</a>
-                <a href="#reszveny_arfolyam">Részvény árfolyam</a>
             </nav>
         </div>
     </header>
+    <!-- Futó sáv: a részvények jelölései. A lista kétszer szerepel, hogy a mozgás folyamatos legyen. -->
+    <div class="ticker" aria-hidden="true">
+        <div class="ticker_sav">
+            <span>AAPL</span>
+            <span>MSFT</span>
+            <span>GOOGL</span>
+            <span>AMZN</span>
+            <span>TSLA</span>
+            <span>META</span>
+            <span>NVDA</span>
+            <span>OPEN</span>
+            <span>NFLX</span>
+            <span>AMD</span>
+            <span>AAPL</span>
+            <span>MSFT</span>
+            <span>GOOGL</span>
+            <span>AMZN</span>
+            <span>TSLA</span>
+            <span>META</span>
+            <span>NVDA</span>
+            <span>OPEN</span>
+            <span>NFLX</span>
+            <span>AMD</span>
+        </div>
+    </div>
     <div class="banner" id="home">
         <h1>Tőzsde bemutató</h1>
     </div>
@@ -176,11 +202,11 @@
         <span id="valuta_eredmeny"></span><br>
         <span id="valuta_hiba"></span>
     </section>
-    <section id="reszveny_arfolyam">
+    <section>
         <h2>Részvény árfolyamok</h2>
         <p>Válassz ki egy részvényt a listából, hogy megtekintsd az árfolyamát az elmúlt 14 napra vissza menőleg.</p>
 
-        <div class="arfolyam">
+        <div class="arfolyam reszveny_grafikon">
             <select name="reszveny_valasztas" id="reszveny_valasztas">
                 <option value="AAPL">Apple</option>
                 <option value="MSFT">Microsoft</option>
@@ -189,7 +215,7 @@
                 <option value="TSLA">Tesla</option>
                 <option value="META">Meta (Facebook)</option>
                 <option value="NVDA">NVIDIA</option>
-                <option value="INTC">Intel</option>
+                <option value="OPEN">Open AI</option>
                 <option value="NFLX">Netflix</option>
                 <option value="AMD">AMD</option>
             </select>
